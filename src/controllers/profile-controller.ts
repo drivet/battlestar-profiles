@@ -5,9 +5,9 @@ import {
   Delete,
   Get,
   Header,
-  Patch,
   Path,
   Put,
+  Query,
   Response,
   Route,
   Security,
@@ -15,7 +15,7 @@ import {
   Tags,
 } from 'tsoa';
 
-import { Profile, ProfileCreatePayload, ProfileUpdatePayload } from '../services/profile-models';
+import { Profile, ProfileCreatePayload, Username } from '../services/profile-models';
 import { ProfileService } from '../services/profile-service';
 
 interface ValidateErrorJSON {
@@ -49,32 +49,24 @@ export class ProfileController extends Controller {
   }
 
   /**
-   * Updates a profile
-   *
-   * @param id the profile if of the profile you wish to update
-   * @param requestBody information to update the profile
+   * Fetches a list of usernames
    */
-  @Response<ValidateErrorJSON>(422, 'Validation Failed')
-  @SuccessResponse('204', 'No content')
-  @Patch('{id}')
-  async updateProfile(
-    @Path() id: string,
-    @Body() requestBody: ProfileUpdatePayload,
-    @Header('x-uid') uid?: string
-  ): Promise<void> {
-    this.profileService.updateProfile(id, requestBody, uid);
+  @SuccessResponse('200', 'Ok')
+  @Get('usernames')
+  public async getUsernames(@Query('search') search: string): Promise<Username[]> {
+    return await this.profileService.getUsernames(search);
   }
 
   /**
-   * Fetches an existing profile
+   * Fetches a profile
    *
    * @param id the profile id of the profile you want to fetch
    */
   @Response(404, 'Not Found')
   @SuccessResponse('200', 'Ok')
   @Get('{id}')
-  public async getProfile(@Path() id: string, @Header('x-uid') uid?: string): Promise<Profile> {
-    const profile = await this.profileService.getProfile(id, uid);
+  public async getProfile(@Path() id: string, @Header('x-user') user?: string): Promise<Profile> {
+    const profile = await this.profileService.getProfile(id, user);
     if (!profile || !profile._id) {
       throw {
         message: 'profile not found',
@@ -89,8 +81,8 @@ export class ProfileController extends Controller {
    */
   @SuccessResponse('200', 'Ok')
   @Get()
-  public async getProfiles(): Promise<Profile[]> {
-    return await this.profileService.getProfiles();
+  public async getProfiles(@Header('x-user') user?: string): Promise<Profile[]> {
+    return await this.profileService.getProfiles(user);
   }
 
   /**
@@ -100,7 +92,7 @@ export class ProfileController extends Controller {
    */
   @SuccessResponse('204', 'No content')
   @Delete('{id}')
-  public async deleteProfile(@Path() id: string, @Header('x-uid') uid?: string): Promise<void> {
-    await this.profileService.deleteProfile(id, uid);
+  public async deleteProfile(@Path() id: string, @Header('x-user') user?: string): Promise<void> {
+    await this.profileService.deleteProfile(id, user);
   }
 }

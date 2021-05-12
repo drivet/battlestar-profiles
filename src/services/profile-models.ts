@@ -1,13 +1,14 @@
 export interface ProfileCreatePayload {
-  nickname: string;
-}
-
-export interface ProfileUpdatePayload {
-  nickname: string;
+  username: string;
 }
 
 export interface Profile {
   _id: string;
   createdAt: Date;
-  nickname: string;
+  username: string;
+}
+
+export interface Username {
+  _id: string;
+  username: string;
 }
